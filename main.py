@@ -21,15 +21,19 @@ class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.image = player_img
-        self.rect = self.image.get_rect(center=(100, HEIGHT//2))
+        self.rect = self.image.get_rect(center=(100, HEIGHT // 2))
         self.speed = 5
         self.health = 100
 
     def update(self, keys):
-        if keys[pygame.K_w]: self.rect.y -= self.speed
-        if keys[pygame.K_s]: self.rect.y += self.speed
-        if keys[pygame.K_a]: self.rect.x -= self.speed
-        if keys[pygame.K_d]: self.rect.x += self.speed
+        if keys[pygame.K_w]:
+            self.rect.y -= self.speed
+        if keys[pygame.K_s]:
+            self.rect.y += self.speed
+        if keys[pygame.K_a]:
+            self.rect.x -= self.speed
+        if keys[pygame.K_d]:
+            self.rect.x += self.speed
         self.rect.clamp_ip(pygame.Rect(0, 0, WIDTH, HEIGHT))
 
     def shoot(self, group, missile=False):
@@ -38,6 +42,7 @@ class Player(pygame.sprite.Sprite):
         else:
             proj = Projectile(self.rect.right, self.rect.centery, 15)
         group.add(proj)
+
 
 # Enemy jet class
 class Enemy(pygame.sprite.Sprite):
@@ -58,6 +63,7 @@ class Enemy(pygame.sprite.Sprite):
             bullets_group.add(bullet)
             self.last_shot = now
 
+
 # Projectiles (bullets and missiles)
 class Projectile(pygame.sprite.Sprite):
     def __init__(self, x, y, speed, is_missile=False):
@@ -72,6 +78,7 @@ class Projectile(pygame.sprite.Sprite):
         if self.rect.right < 0 or self.rect.left > WIDTH:
             self.kill()
 
+
 # Sprite groups
 player = Player()
 player_group = pygame.sprite.GroupSingle(player)
@@ -80,6 +87,7 @@ enemy_bullets = pygame.sprite.Group()
 enemies = pygame.sprite.Group()
 
 # Game loop
+
 
 def game_loop():
     run = True
@@ -134,6 +142,7 @@ def game_loop():
 
     pygame.quit()
 
+
 def show_game_over(score):
     font = pygame.font.SysFont("Arial", 48)
     small_font = pygame.font.SysFont("Arial", 24)
@@ -156,5 +165,6 @@ def show_game_over(score):
                     run = False
 
     pygame.quit()
+
 
 game_loop()
