@@ -1,5 +1,5 @@
-import random
 import pygame
+import random
 
 # Setup
 pygame.init()
@@ -16,25 +16,20 @@ enemy_img = pygame.transform.rotate(enemy_img, 90)
 bullet_img = pygame.transform.scale(pygame.image.load("assets/bullet.png"), (20, 10))
 missile_img = pygame.transform.scale(pygame.image.load("assets/missile.png"), (30, 15))
 
-
 # Player jet class
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.image = player_img
-        self.rect = self.image.get_rect(center=(100, HEIGHT // 2))
+        self.rect = self.image.get_rect(center=(100, HEIGHT//2))
         self.speed = 5
         self.health = 100
 
     def update(self, keys):
-        if keys[pygame.K_w]:
-            self.rect.y -= self.speed
-        if keys[pygame.K_s]:
-            self.rect.y += self.speed
-        if keys[pygame.K_a]:
-            self.rect.x -= self.speed
-        if keys[pygame.K_d]:
-            self.rect.x += self.speed
+        if keys[pygame.K_w]: self.rect.y -= self.speed
+        if keys[pygame.K_s]: self.rect.y += self.speed
+        if keys[pygame.K_a]: self.rect.x -= self.speed
+        if keys[pygame.K_d]: self.rect.x += self.speed
         self.rect.clamp_ip(pygame.Rect(0, 0, WIDTH, HEIGHT))
 
     def shoot(self, group, missile=False):
@@ -44,14 +39,14 @@ class Player(pygame.sprite.Sprite):
             proj = Projectile(self.rect.right, self.rect.centery, 15)
         group.add(proj)
 
-
 # Enemy jet class
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, speed_multiplier=1.0):
         super().__init__()
         self.image = enemy_img
         self.rect = self.image.get_rect(center=(random.randint(WIDTH + 50, WIDTH + 200), random.randint(50, HEIGHT - 50)))
-        self.speed = random.randint(2, 4)
+        base_speed = random.randint(2, 4)
+        self.speed = base_speed * speed_multiplier
         self.last_shot = pygame.time.get_ticks()
 
     def update(self, bullets_group):
@@ -63,7 +58,6 @@ class Enemy(pygame.sprite.Sprite):
             bullet = Projectile(self.rect.left, self.rect.centery, -7)
             bullets_group.add(bullet)
             self.last_shot = now
-
 
 # Projectiles (bullets and missiles)
 class Projectile(pygame.sprite.Sprite):
@@ -79,7 +73,6 @@ class Projectile(pygame.sprite.Sprite):
         if self.rect.right < 0 or self.rect.left > WIDTH:
             self.kill()
 
-
 # Sprite groups
 player = Player()
 player_group = pygame.sprite.GroupSingle(player)
@@ -88,9 +81,14 @@ enemy_bullets = pygame.sprite.Group()
 enemies = pygame.sprite.Group()
 
 # Game loop
-
-
 def game_loop():
+    global player, player_group, player_bullets, enemy_bullets, enemies
+    player = Player()
+    player_group = pygame.sprite.GroupSingle(player)
+    player_bullets = pygame.sprite.Group()
+    enemy_bullets = pygame.sprite.Group()
+    enemies = pygame.sprite.Group()
+
     run = True
     font = pygame.font.SysFont("Arial", 24)
     score = 0
@@ -105,7 +103,9 @@ def game_loop():
             if event.type == pygame.QUIT:
                 run = False
             if event.type == spawn_event:
-                enemies.add(Enemy())
+                # Increase enemy speed every 10 points
+                speed_multiplier = 1 + (score // 10) * 0.1
+                enemies.add(Enemy(speed_multiplier))
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
                     player.shoot(player_bullets)
@@ -143,29 +143,47 @@ def game_loop():
 
     pygame.quit()
 
-
+# Game Over screen with Try Again button
 def show_game_over(score):
     font = pygame.font.SysFont("Arial", 48)
     small_font = pygame.font.SysFont("Arial", 24)
     run = True
+
+    button_rect = pygame.Rect(WIDTH // 2 - 100, HEIGHT // 2 + 80, 200, 50)
+
     while run:
         win.fill((0, 0, 0))
+
+        # Texts
         text = font.render("Game Over", True, (255, 0, 0))
         score_text = small_font.render(f"Final Score: {score}", True, (255, 255, 255))
         hint = small_font.render("Press ESC to quit", True, (180, 180, 180))
+
+        # Draw texts
         win.blit(text, (WIDTH // 2 - text.get_width() // 2, HEIGHT // 2 - 60))
         win.blit(score_text, (WIDTH // 2 - score_text.get_width() // 2, HEIGHT // 2))
         win.blit(hint, (WIDTH // 2 - hint.get_width() // 2, HEIGHT // 2 + 40))
+
+        # Try Again button
+        pygame.draw.rect(win, (50, 150, 255), button_rect)
+        button_text = small_font.render("Try Again", True, (255, 255, 255))
+        win.blit(button_text, (button_rect.centerx - button_text.get_width() // 2,
+                               button_rect.centery - button_text.get_height() // 2))
+
         pygame.display.update()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
-            if event.type == pygame.KEYDOWN:
+            elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     run = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if button_rect.collidepoint(event.pos):
+                    game_loop()
+                    return
 
     pygame.quit()
 
-
+# Start game
 game_loop()
