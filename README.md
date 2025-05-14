@@ -1,3 +1,1 @@
-# fighterjetgame
-
-## A cool fighter jet game
+# The website for this fighter game
