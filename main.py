@@ -16,6 +16,7 @@ enemy_img = pygame.transform.rotate(enemy_img, 90)
 bullet_img = pygame.transform.scale(pygame.image.load("assets/bullet.png"), (20, 10))
 missile_img = pygame.transform.scale(pygame.image.load("assets/missile.png"), (30, 15))
 
+
 # Player jet class
 class Player(pygame.sprite.Sprite):
     def __init__(self):
